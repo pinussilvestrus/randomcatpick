@@ -21,6 +21,13 @@
 				"title": "Show a cat picture",
 				"category": "Cat Coding"
 			}
+		],
+		"keybindings": [
+			{
+				"command": "catCoding.start",
+				"key": "shift+ctrl+l",
+				"mac": "shift+ctrl+l"
+			}
 		]
 	},
 	"scripts": {
