@@ -1,24 +1,12 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
 
-const cats = {
-	'Coding Cat': 'https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif',
-	'Compiling Cat': 'https://media.giphy.com/media/mlvseq9yvZhba/giphy.gif',
-	'Testing Cat': 'https://media.giphy.com/media/3oriO0OEd9QIDdllqo/giphy.gif'
-};
+const CAT_PATH = 'https://cataas.com/cat';
 
 export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand('catCoding.start', () => {
-			CatCodingPanel.createOrShow(context.extensionPath);
-		})
-	);
-
-	context.subscriptions.push(
-		vscode.commands.registerCommand('catCoding.doRefactor', () => {
-			if (CatCodingPanel.currentPanel) {
-				CatCodingPanel.currentPanel.doRefactor();
-			}
+			CatCodingPanel.show(context.extensionPath);
 		})
 	);
 
@@ -48,22 +36,13 @@ class CatCodingPanel {
 	private readonly _extensionPath: string;
 	private _disposables: vscode.Disposable[] = [];
 
-	public static createOrShow(extensionPath: string) {
-		const column = vscode.window.activeTextEditor
-			? vscode.window.activeTextEditor.viewColumn
-			: undefined;
-
-		// If we already have a panel, show it.
-		if (CatCodingPanel.currentPanel) {
-			CatCodingPanel.currentPanel._panel.reveal(column);
-			return;
-		}
+	public static show(extensionPath: string) {
 
 		// Otherwise, create a new panel.
 		const panel = vscode.window.createWebviewPanel(
 			CatCodingPanel.viewType,
 			'Cat Coding',
-			column || vscode.ViewColumn.One,
+			vscode.ViewColumn.One,
 			{
 				// Enable javascript in the webview
 				enableScripts: true,
@@ -116,12 +95,6 @@ class CatCodingPanel {
 		);
 	}
 
-	public doRefactor() {
-		// Send a message to the webview webview.
-		// You can send any JSON serializable data.
-		this._panel.webview.postMessage({ command: 'refactor' });
-	}
-
 	public dispose() {
 		CatCodingPanel.currentPanel = undefined;
 
@@ -138,30 +111,15 @@ class CatCodingPanel {
 
 	private _update() {
 		const webview = this._panel.webview;
-
-		// Vary the webview's content based on where it is located in the editor.
-		switch (this._panel.viewColumn) {
-			case vscode.ViewColumn.Two:
-				this._updateForCat(webview, 'Compiling Cat');
-				return;
-
-			case vscode.ViewColumn.Three:
-				this._updateForCat(webview, 'Testing Cat');
-				return;
-
-			case vscode.ViewColumn.One:
-			default:
-				this._updateForCat(webview, 'Coding Cat');
-				return;
-		}
+		this._updateRandomCat(webview);
 	}
 
-	private _updateForCat(webview: vscode.Webview, catName: keyof typeof cats) {
-		this._panel.title = catName;
-		this._panel.webview.html = this._getHtmlForWebview(webview, cats[catName]);
+	private _updateRandomCat(webview: vscode.Webview) {
+		this._panel.title = 'Cat';
+		this._panel.webview.html = this._getHtmlForWebview(webview);
 	}
 
-	private _getHtmlForWebview(webview: vscode.Webview, catGifPath: string) {
+	private _getHtmlForWebview(webview: vscode.Webview) {
 		// Local path to main script run in the webview
 		const scriptPathOnDisk = vscode.Uri.file(
 			path.join(this._extensionPath, 'media', 'main.js')
@@ -186,8 +144,7 @@ class CatCodingPanel {
                 <title>Cat Coding</title>
             </head>
             <body>
-                <img src="${catGifPath}" width="300" />
-                <h1 id="lines-of-code-counter">0</h1>
+                <img src="${CAT_PATH}" width="300" />
                 <script nonce="${nonce}" src="${scriptUri}"></script>
             </body>
             </html>`;
